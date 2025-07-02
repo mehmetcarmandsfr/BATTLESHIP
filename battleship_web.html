@@ -1,0 +1,844 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Battleship Game</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .game-container {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+            padding: 30px;
+            max-width: 1200px;
+            width: 100%;
+        }
+
+        h1 {
+            text-align: center;
+            color: #2c3e50;
+            margin-bottom: 30px;
+            font-size: 2.5em;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .game-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 10px;
+        }
+
+        .status {
+            font-size: 1.2em;
+            font-weight: bold;
+            color: #2c3e50;
+        }
+
+        .stats {
+            display: flex;
+            gap: 20px;
+        }
+
+        .stat-item {
+            padding: 10px 15px;
+            background: #3498db;
+            color: white;
+            border-radius: 5px;
+            font-weight: bold;
+        }
+
+        .grids-container {
+            display: flex;
+            gap: 40px;
+            justify-content: center;
+            margin-bottom: 30px;
+        }
+
+        .grid-section {
+            text-align: center;
+        }
+
+        .grid-title {
+            font-size: 1.3em;
+            font-weight: bold;
+            color: #2c3e50;
+            margin-bottom: 15px;
+        }
+
+        .grid {
+            display: inline-block;
+            border: 3px solid #2c3e50;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+
+        .grid-row {
+            display: flex;
+        }
+
+        .grid-cell {
+            width: 35px;
+            height: 35px;
+            border: 1px solid #34495e;
+            background: #3498db;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            color: white;
+            transition: all 0.2s ease;
+            position: relative;
+        }
+
+        .grid-cell:hover {
+            transform: scale(1.1);
+            z-index: 10;
+        }
+
+        .grid-cell.ship {
+            background: #2c3e50;
+        }
+
+        .grid-cell.hit {
+            background: #e74c3c;
+        }
+
+        .grid-cell.miss {
+            background: #95a5a6;
+        }
+
+        .grid-cell.hover-preview {
+            background: #f39c12 !important;
+        }
+
+        .grid-labels {
+            display: flex;
+            margin-bottom: 5px;
+            padding-left: 35px;
+        }
+
+        .grid-label {
+            width: 35px;
+            height: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            color: #2c3e50;
+        }
+
+        .row-label {
+            width: 35px;
+            height: 35px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            color: #2c3e50;
+            background: #ecf0f1;
+        }
+
+        .controls {
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        .setup-controls {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 20px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 10px;
+        }
+
+        .ship-list {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .ship-item {
+            padding: 10px 15px;
+            background: #3498db;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.2s ease;
+        }
+
+        .ship-item:hover {
+            background: #2980b9;
+            transform: translateY(-2px);
+        }
+
+        .ship-item.selected {
+            background: #e74c3c;
+        }
+
+        .ship-item.placed {
+            background: #95a5a6;
+            cursor: not-allowed;
+        }
+
+        .orientation-controls {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .orientation-btn {
+            padding: 10px 15px;
+            background: #34495e;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .orientation-btn.active {
+            background: #e74c3c;
+        }
+
+        .game-buttons {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-transform: uppercase;
+        }
+
+        .btn-primary {
+            background: #3498db;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #2980b9;
+            transform: translateY(-2px);
+        }
+
+        .btn-success {
+            background: #27ae60;
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #229954;
+            transform: translateY(-2px);
+        }
+
+        .btn-warning {
+            background: #f39c12;
+            color: white;
+        }
+
+        .btn-warning:hover {
+            background: #e67e22;
+            transform: translateY(-2px);
+        }
+
+        .btn-danger {
+            background: #e74c3c;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #c0392b;
+            transform: translateY(-2px);
+        }
+
+        .btn:disabled {
+            background: #95a5a6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        .message {
+            text-align: center;
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 8px;
+            font-weight: bold;
+        }
+
+        .message.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .message.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .message.info {
+            background: #cce7ff;
+            color: #004085;
+            border: 1px solid #b3d7ff;
+        }
+
+        @media (max-width: 768px) {
+            .grids-container {
+                flex-direction: column;
+                gap: 20px;
+            }
+            
+            .setup-controls {
+                flex-direction: column;
+                gap: 15px;
+            }
+            
+            .ship-list {
+                justify-content: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        <h1>🚢 BATTLESHIP GAME 🚢</h1>
+        
+        <div class="game-info">
+            <div class="status" id="gameStatus">Place your ships on the left grid</div>
+            <div class="stats">
+                <div class="stat-item">Your Hits: <span id="playerHits">0</span></div>
+                <div class="stat-item">Enemy Hits: <span id="computerHits">0</span></div>
+            </div>
+        </div>
+
+        <div class="grids-container">
+            <div class="grid-section">
+                <div class="grid-title">🛡️ Your Fleet</div>
+                <div class="grid-labels">
+                    <div class="grid-label"></div>
+                    <div class="grid-label">A</div>
+                    <div class="grid-label">B</div>
+                    <div class="grid-label">C</div>
+                    <div class="grid-label">D</div>
+                    <div class="grid-label">E</div>
+                    <div class="grid-label">F</div>
+                    <div class="grid-label">G</div>
+                    <div class="grid-label">H</div>
+                    <div class="grid-label">I</div>
+                    <div class="grid-label">J</div>
+                </div>
+                <div class="grid" id="playerGrid"></div>
+            </div>
+
+            <div class="grid-section">
+                <div class="grid-title">🎯 Enemy Waters</div>
+                <div class="grid-labels">
+                    <div class="grid-label"></div>
+                    <div class="grid-label">A</div>
+                    <div class="grid-label">B</div>
+                    <div class="grid-label">C</div>
+                    <div class="grid-label">D</div>
+                    <div class="grid-label">E</div>
+                    <div class="grid-label">F</div>
+                    <div class="grid-label">G</div>
+                    <div class="grid-label">H</div>
+                    <div class="grid-label">I</div>
+                    <div class="grid-label">J</div>
+                </div>
+                <div class="grid" id="computerGrid"></div>
+            </div>
+        </div>
+
+        <div id="setupControls" class="setup-controls">
+            <div>
+                <label style="font-weight: bold; margin-bottom: 10px; display: block;">Ships to Place:</label>
+                <div class="ship-list" id="shipList">
+                    <button class="ship-item" data-ship="carrier" data-size="5">Carrier (5)</button>
+                    <button class="ship-item" data-ship="battleship" data-size="4">Battleship (4)</button>
+                    <button class="ship-item" data-ship="cruiser" data-size="3">Cruiser (3)</button>
+                    <button class="ship-item" data-ship="submarine" data-size="3">Submarine (3)</button>
+                    <button class="ship-item" data-ship="destroyer" data-size="2">Destroyer (2)</button>
+                </div>
+            </div>
+
+            <div class="orientation-controls">
+                <label style="font-weight: bold;">Orientation:</label>
+                <button class="orientation-btn active" id="horizontalBtn">Horizontal</button>
+                <button class="orientation-btn" id="verticalBtn">Vertical</button>
+            </div>
+        </div>
+
+        <div class="controls">
+            <div class="game-buttons">
+                <button class="btn btn-warning" id="autoPlaceBtn">Auto Place Ships</button>
+                <button class="btn btn-danger" id="clearBtn">Clear All</button>
+                <button class="btn btn-success" id="startBtn" disabled>Start Game</button>
+                <button class="btn btn-primary" id="newGameBtn">New Game</button>
+            </div>
+        </div>
+
+        <div id="messageArea"></div>
+    </div>
+
+    <script>
+        class BattleshipGame {
+            constructor() {
+                this.GRID_SIZE = 10;
+                this.SHIPS = {
+                    carrier: 5,
+                    battleship: 4,
+                    cruiser: 3,
+                    submarine: 3,
+                    destroyer: 2
+                };
+
+                this.playerGrid = Array(this.GRID_SIZE).fill().map(() => Array(this.GRID_SIZE).fill(0));
+                this.computerGrid = Array(this.GRID_SIZE).fill().map(() => Array(this.GRID_SIZE).fill(0));
+                this.playerShots = Array(this.GRID_SIZE).fill().map(() => Array(this.GRID_SIZE).fill(0));
+                this.computerShots = Array(this.GRID_SIZE).fill().map(() => Array(this.GRID_SIZE).fill(0));
+
+                this.gamePhase = 'setup'; // setup, playing, gameOver
+                this.currentShip = null;
+                this.orientation = 'horizontal';
+                this.shipsPlaced = {};
+                this.playerTurn = true;
+
+                this.playerHits = 0;
+                this.computerHits = 0;
+
+                this.initializeGame();
+            }
+
+            initializeGame() {
+                this.createGrids();
+                this.setupEventListeners();
+                this.placeComputerShips();
+                this.updateStatus('Place your ships on the left grid');
+            }
+
+            createGrids() {
+                this.createGrid('playerGrid', true);
+                this.createGrid('computerGrid', false);
+            }
+
+            createGrid(containerId, isPlayer) {
+                const container = document.getElementById(containerId);
+                container.innerHTML = '';
+
+                for (let row = 0; row < this.GRID_SIZE; row++) {
+                    const gridRow = document.createElement('div');
+                    gridRow.className = 'grid-row';
+
+                    // Row label
+                    const rowLabel = document.createElement('div');
+                    rowLabel.className = 'row-label';
+                    rowLabel.textContent = row + 1;
+                    gridRow.appendChild(rowLabel);
+
+                    for (let col = 0; col < this.GRID_SIZE; col++) {
+                        const cell = document.createElement('div');
+                        cell.className = 'grid-cell';
+                        cell.dataset.row = row;
+                        cell.dataset.col = col;
+
+                        if (isPlayer) {
+                            cell.addEventListener('click', () => this.handlePlayerGridClick(row, col));
+                            cell.addEventListener('mouseenter', () => this.handleHoverEnter(row, col));
+                            cell.addEventListener('mouseleave', () => this.handleHoverLeave(row, col));
+                        } else {
+                            cell.addEventListener('click', () => this.handleComputerGridClick(row, col));
+                        }
+
+                        gridRow.appendChild(cell);
+                    }
+
+                    container.appendChild(gridRow);
+                }
+            }
+
+            setupEventListeners() {
+                // Ship selection
+                document.querySelectorAll('.ship-item').forEach(button => {
+                    button.addEventListener('click', (e) => {
+                        if (!e.target.classList.contains('placed')) {
+                            this.selectShip(e.target.dataset.ship);
+                        }
+                    });
+                });
+
+                // Orientation buttons
+                document.getElementById('horizontalBtn').addEventListener('click', () => this.setOrientation('horizontal'));
+                document.getElementById('verticalBtn').addEventListener('click', () => this.setOrientation('vertical'));
+
+                // Control buttons
+                document.getElementById('autoPlaceBtn').addEventListener('click', () => this.autoPlaceShips());
+                document.getElementById('clearBtn').addEventListener('click', () => this.clearShips());
+                document.getElementById('startBtn').addEventListener('click', () => this.startGame());
+                document.getElementById('newGameBtn').addEventListener('click', () => this.newGame());
+            }
+
+            selectShip(shipType) {
+                if (this.shipsPlaced[shipType]) return;
+
+                this.currentShip = shipType;
+                document.querySelectorAll('.ship-item').forEach(btn => btn.classList.remove('selected'));
+                document.querySelector(`[data-ship="${shipType}"]`).classList.add('selected');
+                this.updateStatus(`Click to place ${shipType} (${this.SHIPS[shipType]} cells)`);
+            }
+
+            setOrientation(orientation) {
+                this.orientation = orientation;
+                document.querySelectorAll('.orientation-btn').forEach(btn => btn.classList.remove('active'));
+                document.getElementById(orientation + 'Btn').classList.add('active');
+            }
+
+            handlePlayerGridClick(row, col) {
+                if (this.gamePhase === 'setup' && this.currentShip) {
+                    this.placeShip(row, col, this.currentShip, this.orientation);
+                }
+            }
+
+            handleComputerGridClick(row, col) {
+                if (this.gamePhase === 'playing' && this.playerTurn) {
+                    if (this.playerShots[row][col] === 0) {
+                        this.playerShoot(row, col);
+                    }
+                }
+            }
+
+            handleHoverEnter(row, col) {
+                if (this.gamePhase === 'setup' && this.currentShip) {
+                    this.showShipPreview(row, col, true);
+                }
+            }
+
+            handleHoverLeave(row, col) {
+                if (this.gamePhase === 'setup' && this.currentShip) {
+                    this.showShipPreview(row, col, false);
+                }
+            }
+
+            showShipPreview(row, col, show) {
+                const shipSize = this.SHIPS[this.currentShip];
+                if (!this.canPlaceShip(row, col, shipSize, this.orientation, this.playerGrid)) return;
+
+                for (let i = 0; i < shipSize; i++) {
+                    const r = this.orientation === 'horizontal' ? row : row + i;
+                    const c = this.orientation === 'horizontal' ? col + i : col;
+
+                    if (r >= 0 && r < this.GRID_SIZE && c >= 0 && c < this.GRID_SIZE) {
+                        const cell = document.querySelector(`#playerGrid [data-row="${r}"][data-col="${c}"]`);
+                        if (show) {
+                            cell.classList.add('hover-preview');
+                        } else {
+                            cell.classList.remove('hover-preview');
+                        }
+                    }
+                }
+            }
+
+            canPlaceShip(row, col, size, orientation, grid) {
+                if (orientation === 'horizontal') {
+                    if (col + size > this.GRID_SIZE) return false;
+                    for (let i = 0; i < size; i++) {
+                        if (grid[row][col + i] !== 0) return false;
+                    }
+                } else {
+                    if (row + size > this.GRID_SIZE) return false;
+                    for (let i = 0; i < size; i++) {
+                        if (grid[row + i][col] !== 0) return false;
+                    }
+                }
+                return true;
+            }
+
+            placeShip(row, col, shipType, orientation) {
+                const shipSize = this.SHIPS[shipType];
+
+                if (!this.canPlaceShip(row, col, shipSize, orientation, this.playerGrid)) {
+                    this.showMessage('Cannot place ship here!', 'error');
+                    return;
+                }
+
+                const positions = [];
+                for (let i = 0; i < shipSize; i++) {
+                    const r = orientation === 'horizontal' ? row : row + i;
+                    const c = orientation === 'horizontal' ? col + i : col;
+                    this.playerGrid[r][c] = 1;
+                    positions.push([r, c]);
+                }
+
+                this.shipsPlaced[shipType] = positions;
+                this.updatePlayerGridDisplay();
+
+                // Mark ship as placed
+                const shipButton = document.querySelector(`[data-ship="${shipType}"]`);
+                shipButton.classList.add('placed');
+                shipButton.classList.remove('selected');
+
+                this.currentShip = null;
+
+                if (Object.keys(this.shipsPlaced).length === Object.keys(this.SHIPS).length) {
+                    this.updateStatus('All ships placed! Click Start Game to begin.');
+                    document.getElementById('startBtn').disabled = false;
+                } else {
+                    this.updateStatus('Select next ship to place');
+                }
+            }
+
+            autoPlaceShips() {
+                this.clearShips();
+
+                Object.keys(this.SHIPS).forEach(shipType => {
+                    const shipSize = this.SHIPS[shipType];
+                    let placed = false;
+                    let attempts = 0;
+
+                    while (!placed && attempts < 100) {
+                        const row = Math.floor(Math.random() * this.GRID_SIZE);
+                        const col = Math.floor(Math.random() * this.GRID_SIZE);
+                        const orientation = Math.random() < 0.5 ? 'horizontal' : 'vertical';
+
+                        if (this.canPlaceShip(row, col, shipSize, orientation, this.playerGrid)) {
+                            const positions = [];
+                            for (let i = 0; i < shipSize; i++) {
+                                const r = orientation === 'horizontal' ? row : row + i;
+                                const c = orientation === 'horizontal' ? col + i : col;
+                                this.playerGrid[r][c] = 1;
+                                positions.push([r, c]);
+                            }
+                            this.shipsPlaced[shipType] = positions;
+                            placed = true;
+                        }
+                        attempts++;
+                    }
+                });
+
+                this.updatePlayerGridDisplay();
+                document.querySelectorAll('.ship-item').forEach(btn => btn.classList.add('placed'));
+                document.getElementById('startBtn').disabled = false;
+                this.updateStatus('All ships placed! Click Start Game to begin.');
+            }
+
+            clearShips() {
+                this.playerGrid = Array(this.GRID_SIZE).fill().map(() => Array(this.GRID_SIZE).fill(0));
+                this.shipsPlaced = {};
+                this.currentShip = null;
+                this.updatePlayerGridDisplay();
+                document.querySelectorAll('.ship-item').forEach(btn => {
+                    btn.classList.remove('placed', 'selected');
+                });
+                document.getElementById('startBtn').disabled = true;
+                this.updateStatus('Place your ships on the left grid');
+            }
+
+            placeComputerShips() {
+                Object.keys(this.SHIPS).forEach(shipType => {
+                    const shipSize = this.SHIPS[shipType];
+                    let placed = false;
+                    let attempts = 0;
+
+                    while (!placed && attempts < 100) {
+                        const row = Math.floor(Math.random() * this.GRID_SIZE);
+                        const col = Math.floor(Math.random() * this.GRID_SIZE);
+                        const orientation = Math.random() < 0.5 ? 'horizontal' : 'vertical';
+
+                        if (this.canPlaceShip(row, col, shipSize, orientation, this.computerGrid)) {
+                            for (let i = 0; i < shipSize; i++) {
+                                const r = orientation === 'horizontal' ? row : row + i;
+                                const c = orientation === 'horizontal' ? col + i : col;
+                                this.computerGrid[r][c] = 1;
+                            }
+                            placed = true;
+                        }
+                        attempts++;
+                    }
+                });
+            }
+
+            startGame() {
+                this.gamePhase = 'playing';
+                this.playerTurn = true;
+                document.getElementById('setupControls').classList.add('hidden');
+                this.updateStatus('Your turn! Click on enemy waters to fire.');
+            }
+
+            playerShoot(row, col) {
+                this.playerShots[row][col] = 1;
+
+                if (this.computerGrid[row][col] === 1) {
+                    this.playerShots[row][col] = 2;
+                    this.playerHits++;
+                    this.updateComputerGridDisplay(row, col, 'hit');
+                    this.showMessage('Hit! 💥', 'success');
+
+                    if (this.checkWin('player')) return;
+
+                    this.updateStatus('Hit! Take another shot.');
+                } else {
+                    this.updateComputerGridDisplay(row, col, 'miss');
+                    this.showMessage('Miss! 💧', 'info');
+                    this.updateStatus("Miss! Computer's turn.");
+                    this.playerTurn = false;
+                    setTimeout(() => this.computerShoot(), 1000);
+                }
+
+                this.updateStats();
+            }
+
+            computerShoot() {
+                let row, col;
+                do {
+                    row = Math.floor(Math.random() * this.GRID_SIZE);
+                    col = Math.floor(Math.random() * this.GRID_SIZE);
+                } while (this.computerShots[row][col] !== 0);
+
+                this.computerShots[row][col] = 1;
+                const coord = String.fromCharCode(65 + col) + (row + 1);
+
+                if (this.playerGrid[row][col] === 1) {
+                    this.computerShots[row][col] = 2;
+                    this.computerHits++;
+                    this.updatePlayerGridDisplay(row, col, 'hit');
+                    this.showMessage(`Computer hit ${coord}! 💥`, 'error');
+
+                    if (this.checkWin('computer')) return;
+
+                    this.updateStatus('Computer hit your ship! Computer continues.');
+                    setTimeout(() => this.computerShoot(), 1000);
+                } else {
+                    this.updatePlayerGridDisplay(row, col, 'miss');
+                    this.showMessage(`Computer missed at ${coord}! 💧`, 'info');
+                    this.updateStatus('Computer missed! Your turn.');
+                    this.playerTurn = true;
+                }
+
+                this.updateStats();
+            }
+
+            checkWin(player) {
+                const totalShips = Object.values(this.SHIPS).reduce((a, b) => a + b, 0);
+
+                if (player === 'player' && this.playerHits >= totalShips) {
+                    this.gamePhase = 'gameOver';
+                    this.showMessage('🎉 Congratulations! You won!', 'success');
+                    this.updateStatus('You won!');
+                    return true;
+                } else if (player === 'computer' && this.computerHits >= totalShips) {
+                    this.gamePhase = 'gameOver';
+                    this.showMessage('💀 Computer won! Better luck next time!', 'error');
+                    this.updateStatus('Computer won!');
+                    return true;
+                }
+
+                return false;
+            }
+
+            updatePlayerGridDisplay(hitRow = -1, hitCol = -1, hitType = null) {
+                for (let row = 0; row < this.GRID_SIZE; row++) {
+                    for (let col = 0; col < this.GRID_SIZE; col++) {
+                        const cell = document.querySelector(`#playerGrid [data-row="${row}"][data-col="${col}"]`);
+                        cell.className = 'grid-cell';
+
+                        if (row === hitRow && col === hitCol) {
+                            cell.classList.add(hitType);
+                            cell.textContent = hitType === 'hit' ? '💥' : '💧';
+                        } else if (this.playerGrid[row][col] === 1 && this.computerShots[row][col] !== 2) {
+                            cell.classList.add('ship');
+                        } else if (this.computerShots[row][col] === 2) {
+                            cell.classList.add('hit');
+                            cell.textContent = '💥';
+                        } else if (this.computerShots[row][col] === 1) {
+                            cell.classList.add('miss');
+                            cell.textContent = '💧';
+                        }
+                    }
+                }
+            }
+
+            updateComputerGridDisplay(hitRow = -1, hitCol = -1, hitType = null) {
+                for (let row = 0; row < this.GRID_SIZE; row++) {
+                    for (let col = 0; col < this.GRID_SIZE; col++) {
+                        const cell = document.querySelector(`#computerGrid [data-row="${row}"][data-col="${col}"]`);
+
+                        if (row === hitRow && col === hitCol) {
+                            cell.classList.add(hitType);
+                            cell.textContent = hitType === 'hit' ? '💥' : '💧';
+                        } else if (this.playerShots[row][col] === 2) {
+                            cell.classList.add('hit');
+                            cell.textContent = '💥';
+                        } else if (this.playerShots[row][col] === 1) {
+                            cell.classList.add('miss');
+                            cell.textContent = '💧';
+                        }
+                    }
+                }
+            }
+
+            updateStats() {
+                document.getElementById('playerHits').textContent = this.playerHits;
+                document.getElementById('computerHits').textContent = this.computerHits;
+            }
+
+            updateStatus(message) {
+                document.getElementById('gameStatus').textContent = message;
+            }
+
+            showMessage(message, type) {
+                const messageArea = document.getElementById('messageArea');
+                messageArea.innerHTML = `<div class="message ${type}">${message}</div>`;
+                setTimeout(() => {
+                    messageArea.innerHTML = '';
+                }, 3000);
+            }
+
+            newGame() {
+                location.reload();
+            }
+        }
+
+        // Start the game when page loads
+        document.addEventListener('DOMContentLoaded', () => {
+            new BattleshipGame();
+        });
+    </script>
+</body>
+</html>
